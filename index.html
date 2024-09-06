@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<head>
+    <title>Wiki Google Login</title>
+</head>
+<body>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <div id="g_id_onload"
+        data-client_id="857911678835-55s20dikocs0s1f57eb4veb9r1m75uvr.apps.googleusercontent.com"
+        data-context="signin"
+        data-callback="handleCredentialResponse">
+    </div>
+
+    <div class="g_id_signin" data-type="standard"></div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            const idToken = response.credential; // Extract ID token from the response
+
+            // Send the ID token to the parent window (Google Site)
+            window.parent.postMessage({ userToken: idToken }, '*');
+        }
+    </script>
+</body>
