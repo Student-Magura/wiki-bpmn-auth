@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Iframe Host</title>
+</head>
+<body>
+
+<!-- Google Sign-In Button -->
+<button id="signInButton">Sign in with Google</button>
+
+<script>
+  // Load the Google Identity Services client library
+  const clientId = '857911678835-55s20dikocs0s1f57eb4veb9r1m75uvr.apps.googleusercontent.com';
+  const redirectUri = 'https://Student-Magura.github.io/wiki-bpmn-auth/auth-callback.html';
+  const scope = 'https://www.googleapis.com/auth/cloud-platform';
+
+  // Function to start the Google OAuth 2.0 flow
+  function initiateGoogleAuth() {
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+                      `client_id=${clientId}&` +
+                      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                      `response_type=code&` +
+                      `scope=${encodeURIComponent(scope)}&` +
+                      `access_type=offline`;
+
+      // Open the authorization URL in a hidden iframe
+      window.location.href = authUrl;
+  }
+
+  // Handle the button click to start Google Sign-In
+  document.getElementById('signInButton').addEventListener('click', initiateGoogleAuth);
+</script>
+</body>
+</html>
