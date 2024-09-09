@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirect Handler</title>
+</head>
+<body>
+<script>
+// Extract the authorization code or access token from the URL
+const params = new URLSearchParams(window.location.search);
+const authCode = params.get('code');  // Get the authorization code
+const error = params.get('error');  // Get any error message
+  
+// Verify that the authCode is present
+if (authCode) {
+    // Send the authorization code to the parent page using postMessage
+    window.opener.postMessage({ authCode: authCode }, '*'); // '*' can be replaced with the specific origin of Page 1 for enhanced security
+} else if (error) {
+    // Handle error
+    window.opener.postMessage({ error: error }, '*');
+} else {
+    // No code or error
+    window.opener.postMessage({ error: 'No authorization code or error received', data: params }, '*');
+}
+</script>
+</body>
+</html>
