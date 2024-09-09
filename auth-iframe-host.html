@@ -8,6 +8,8 @@
 <!-- Google Sign-In Button -->
 <button id="signInButton">Sign in with Google</button>
 
+<iframe id="authFrame" name="authFrame"></iframe>
+
 <script>
   // Load the Google Identity Services client library
   const clientId = '857911678835-55s20dikocs0s1f57eb4veb9r1m75uvr.apps.googleusercontent.com';
@@ -24,11 +26,44 @@
                       `access_type=offline`;
 
       // Open the authorization URL in a hidden iframe
-      window.location.href = authUrl;
+      window.open(authUrl, 'authFrame');
   }
 
+  function oauthSignIn() {
+  // Google's OAuth 2.0 endpoint for requesting an access token
+    var oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+
+    // Create <form> element to submit parameters to OAuth 2.0 endpoint.
+    var form = document.createElement('form');
+    form.setAttribute('method', 'GET'); // Send as a GET request.
+    form.setAttribute('action', oauth2Endpoint);
+
+    // Parameters to pass to OAuth 2.0 endpoint.
+    var params = {'client_id': clientId,
+                  'redirect_uri': redirectUri,
+                  'response_type': 'token',
+                  'scope': scope,
+                  'include_granted_scopes': 'true',
+                  'embed': 'true',
+                  'state': 'pass-through value'};
+
+    // Add form parameters as hidden input values.
+    for (var p in params) {
+        var input = document.createElement('input');
+        input.setAttribute('type', 'hidden');
+        input.setAttribute('name', p);
+        input.setAttribute('value', params[p]);
+        form.appendChild(input);
+    }
+
+    // Add form to page and submit it to open the OAuth 2.0 endpoint.
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+
   // Handle the button click to start Google Sign-In
-  document.getElementById('signInButton').addEventListener('click', initiateGoogleAuth);
+  document.getElementById('signInButton').addEventListener('click', oauthSignIn);
 </script>
 </body>
 </html>
