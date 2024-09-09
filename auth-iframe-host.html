@@ -6,9 +6,9 @@
 <body>
 
 <!-- Google Sign-In Button -->
-<button id="signInButton">Sign in with Google</button>
+<!-- <button id="signInButton">Sign in with Google</button> -->
 
-<iframe id="authFrame" name="authFrame"></iframe>
+<!-- <iframe id="authFrame" name="authFrame"></iframe> -->
 
 <script>
   // Load the Google Identity Services client library
@@ -26,7 +26,7 @@
                       `access_type=offline`;
 
       // Open the authorization URL in a hidden iframe
-      window.open(authUrl, 'authFrame');
+      window.location.href = authUrl;
   }
 
   function oauthSignIn() {
@@ -63,7 +63,8 @@
 
 
   // Handle the button click to start Google Sign-In
-  document.getElementById('signInButton').addEventListener('click', oauthSignIn);
+//   document.getElementById('signInButton').addEventListener('click', oauthSignIn);
+  initiateGoogleAuth();
 </script>
 </body>
 </html>
