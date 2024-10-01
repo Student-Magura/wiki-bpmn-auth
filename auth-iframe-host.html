@@ -14,7 +14,11 @@
   // Load the Google Identity Services client library
   const clientId = '857911678835-55s20dikocs0s1f57eb4veb9r1m75uvr.apps.googleusercontent.com';
   const redirectUri = 'https://Student-Magura.github.io/wiki-bpmn-auth/auth-callback.html';
-  const scope = 'https://www.googleapis.com/auth/cloud-platform openid';
+
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+
+  const scope = urlParams.get('scope') || 'openid';
 
   // Function to start the Google OAuth 2.0 flow
   function initiateGoogleAuth() {
