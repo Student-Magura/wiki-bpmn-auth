@@ -5,21 +5,13 @@
 </head>
 <body>
 
-    <h4 id="status">Loading diagram...</h4>
+    <h4 id="status"></h4>
+    <div class="signIn" data-type="standard"></div>
 
     <div id="viewer"  style="width: 100%; height: 600px;"></div>
 
     <script src="https://www.draw.io/js/viewer.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- <div id="g_id_onload"
-        data-client_id="857911678835-55s20dikocs0s1f57eb4veb9r1m75uvr.apps.googleusercontent.com"
-        data-context="signin"
-        data-scope="https://www.googleapis.com/auth/cloud-platform"
-        data-ux_mode="popup"
-        data-callback="handleCredentialResponse">
-    </div> -->
-
-    <div class="signIn" data-type="standard"></div>
 
     <script type="module">
 
@@ -32,50 +24,15 @@ const REDIRECT_URI = 'https://Student-Magura.github.io/wiki-bpmn-auth/auth-callb
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 const SERVICE_URL = 'https://servacc-jwt-issuer-857911678835.europe-north1.run.app';
 
-async function authUser() {
-    return new Promise((resolve, reject) => {
-        // // old iframe
-        // const iframe = document.createElement('iframe');
-        // iframe.src = 'https://student-magura.github.io/wiki-bpmn-auth/';
-        // document.body.appendChild(iframe);
+// statuses
+const STATUS_SIGN_IN = 'Увійдіть в обліковий запис Google';
+const STATUS_LOADING_DIAGRAM = 'Завантаження схеми...';
+const STATUS_DIAGRAM_LOADED = 'Схема завантажена';
+const STATUS_ERROR = 'Помилка';
+const STATUS_ERROR_NO_PATH = 'Не вказано схему';
 
-        const scope = 'https://www.googleapis.com/auth/cloud-platform openid email';
-        const urlParams = new URLSearchParams({ scope });
-        const oauthHostUrl = 'https://Student-Magura.github.io/wiki-bpmn-auth/auth-iframe-host.html?' + urlParams.toString();
-        const authPopup = window.open(oauthHostUrl, 'GoogleOAuth', 'width=500,height=600');
-
-        // wait for the token
-        const messageHandler = async (event) => {
-            if (event.origin !== 'https://student-magura.github.io') {
-                reject(new Error('Invalid origin'));
-            }
-            if (!event.data.authCode) {
-                reject(new Error('No authCode'));
-            }
-            const authData = event.data;
-            console.log('authData: ', authData);
-            // const userToken = event.data.userToken;
-            // console.log('userToken: ', userToken);
-            window.removeEventListener('message', messageHandler);
-            // iframe.remove();
-            authPopup.close();
-
-            // resolve(userToken);
-            const tokenData = await exchangeCodeForToken(authData.authCode);
-            console.log('ID Token:', tokenData.id_token);
-            resolve(tokenData);
-        };
-
-        window.addEventListener('message', messageHandler);
-
-        // Timeout to reject the promise if no message is received
-        setTimeout(() => {
-            window.removeEventListener('message', messageHandler);
-            // iframe.remove();
-            authPopup.close();
-            reject(new Error('Timeout waiting for userToken'));
-        }, 60000); // 10 seconds timeout
-    });
+function setStatus(status) {
+    document.getElementById('status').innerText = status;
 }
 
 function tokenValidFor(jwt) {
@@ -119,7 +76,7 @@ async function getUserToken() {
     const userToken = localStorage.getItem(USER_TOKEN);
     if (!userToken || tokenValidFor(userToken) <= 0) {
         console.log(!userToken ? 'userToken not found' : 'userToken expired');
-        const newUserToken = await refreshUserSession();
+        const newUserToken = await authUser();
         localStorage.setItem(USER_TOKEN, newUserToken);
         return newUserToken;
     }
@@ -129,14 +86,14 @@ async function getUserToken() {
 
 let resolveUserTokenPromise;
 let rejectUserTokenPromise;
-async function refreshUserSession() {
-    // refresh user session by re-authenticating
+async function authUser() {
+    setStatus(STATUS_SIGN_IN);
     return new Promise((resolve, reject) => {
         resolveUserTokenPromise = resolve;
         rejectUserTokenPromise = reject;
         google.accounts.id.renderButton(
             document.querySelector('.signIn'),
-            { theme: 'outline', size: 'large' }  // customization attributes
+            { theme: 'outline', size: 'large' }
         );
         google.accounts.id.prompt();
 
@@ -145,7 +102,6 @@ async function refreshUserSession() {
             reject(new Error('Timeout waiting for userToken'));
         }, 60000); // 60 seconds timeout
     });
-    // google.accounts.id.prompt(); // also display the One Tap dialog
 }
 
 function handleCredentialResponse(response) {
@@ -153,9 +109,18 @@ function handleCredentialResponse(response) {
     if (response.credential) {
         console.log('User is signed in');
         resolveUserTokenPromise(response.credential);
+        hideSignInButton();
     } else {
         console.log('User is not signed in');
         rejectUserTokenPromise(new Error('User is not signed in'));
+    }
+}
+
+
+function hideSignInButton() {
+    const signInButton = document.querySelector('.signIn');
+    if (signInButton) {
+        signInButton.style.display = 'none';
     }
 }
 
@@ -190,8 +155,25 @@ async function getAccessToken() {
     }
 }
 
+function getFilePath() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const file = urlParams.get('file');
+    if (!file) {
+        throw new Error('No file specified');
+    }
+    return file;
+}
+
 async function loadDiagram(accessToken) {
-    const filePath = 'bpmn/Architecture Light Test.drawio'
+    setStatus(STATUS_LOADING_DIAGRAM);
+    try {
+        const filePath = getFilePath();
+    } catch (error) {
+        console.error('Error:', error);
+        setStatus(STATUS_ERROR_NO_PATH);
+        return;
+    }
+    // const filePath = 'bpmn/Architecture Light Test.drawio'
     const bucket = 'bpmn-wiki';
     const url = getUrl(bucket, filePath);
 
@@ -199,7 +181,7 @@ async function loadDiagram(accessToken) {
     const fileContent = await getFile(url, accessToken);
     console.log(`Loaded content (Loading diagram...${fileContent.length} bytes): ${fileContent.substring(0, 100)}...`);
 
-    document.getElementById('status').innerText = 'Diagram loaded';
+    setStatus(STATUS_DIAGRAM_LOADED);
 
     const container = document.getElementById('viewer');
     console.log(container);
@@ -222,9 +204,6 @@ async function loadDiagram(accessToken) {
         ui.lightboxFit(container.offsetHeight);
     });
 }
-
-// const accessToken = await getAccessToken();
-// loadDiagram(accessToken);
 
 async function getMetadata(url, accessToken) {
     const response = await fetch(url, {
@@ -261,19 +240,6 @@ window.onload = async function () {
 
     const accessToken = await getAccessToken();
     loadDiagram(accessToken);
-
-    // const userToken = localStorage.getItem(USER_TOKEN);
-    // if (isUndefined(userToken) || tokenValidFor(userToken) <= 0) {
-    //     google.accounts.id.renderButton(
-    //         document.querySelector('signIn'),
-    //         { theme: 'outline', size: 'large' }  // customization attributes
-    //     );
-    //     google.accounts.id.prompt(); // also display the One Tap dialog
-    // } else {
-    //     console.log('User is already signed in');
-    //     // Proceed with your application logic
-        
-    // }
 };
 
 </script>
