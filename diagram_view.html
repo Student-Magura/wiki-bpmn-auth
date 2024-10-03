@@ -157,21 +157,15 @@ async function getAccessToken() {
 
 function getFilePath() {
     const urlParams = new URLSearchParams(window.location.search);
-    const file = urlParams.get('file');
-    if (!file) {
-        throw new Error('No file specified');
-    }
-    return file;
+    return urlParams.get('file');
 }
 
 async function loadDiagram(accessToken) {
     setStatus(STATUS_LOADING_DIAGRAM);
-    try {
-        const filePath = getFilePath();
-    } catch (error) {
-        console.error('Error:', error);
+    const filePath = getFilePath();
+    if (!filePath) {
         setStatus(STATUS_ERROR_NO_PATH);
-        return;
+        throw new Error('No file path');
     }
     // const filePath = 'bpmn/Architecture Light Test.drawio'
     const bucket = 'bpmn-wiki';
