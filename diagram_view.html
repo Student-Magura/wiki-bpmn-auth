@@ -159,6 +159,12 @@ function getFilePath() {
     return urlParams.get('file');
 }
 
+function getPage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    return pageParam ? parseInt(pageParam) : 1;
+}
+
 async function loadDiagram(accessToken) {
     setStatus(STATUS_LOADING_DIAGRAM);
     const filePath = getFilePath();
@@ -195,6 +201,14 @@ async function loadDiagram(accessToken) {
         ui.setFileData(fileContent);
         lightbox.style.height = container.offsetHeight + 'px';
         ui.lightboxFit(container.offsetHeight);
+
+        const page = getPage();
+        if (page > 1) {
+            const pageCount = ui.pages.length;
+            if (page <= pageCount) {
+                ui.selectPage(ui.pages[page - 1]);
+            }
+        }
     });
 }
 
