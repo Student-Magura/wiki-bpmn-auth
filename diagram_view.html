@@ -72,7 +72,8 @@ async function getServiceAccToken() {
         console.log('serviceAccToken expires soon');
         const newServiceAccToken = await fetchServiceAccJWT(serviceAccToken);
         if (!newServiceAccToken) {
-            throw new Error('No service account token');
+            console.error('Failed to refresh service account token');
+            return serviceAccToken;
         }
         localStorage.setItem(SERVICE_ACC_TOKEN, newServiceAccToken);
         return newServiceAccToken;
