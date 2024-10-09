@@ -18,6 +18,8 @@ const SERVICE_ACC_TOKEN = 'service'
 const USER_TOKEN = 'user'
 const REFRESH_TOKEN = 'refresh'
 
+const TOKEN_REFRESH_THRESHOLD = 60 * 40; // 40 minutes
+        
 const CLIENT_ID = '857911678835-55s20dikocs0s1f57eb4veb9r1m75uvr.apps.googleusercontent.com';
 const REDIRECT_URI = 'https://Student-Magura.github.io/wiki-bpmn-auth/auth-callback.html';
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
@@ -61,6 +63,14 @@ async function getServiceAccToken() {
         console.log(!serviceAccToken ? 'serviceAccToken not found' : 'serviceAccToken expired');
         const userToken = await getUserToken();
         const newServiceAccToken = await fetchServiceAccJWT(userToken);
+        if (!newServiceAccToken) {
+            throw new Error('No service account token');
+        }
+        localStorage.setItem(SERVICE_ACC_TOKEN, newServiceAccToken);
+        return newServiceAccToken;
+    } else if (tokenValidFor(serviceAccToken) < TOKEN_REFRESH_THRESHOLD) {
+        console.log('serviceAccToken expires soon');
+        const newServiceAccToken = await fetchServiceAccJWT(serviceAccToken);
         if (!newServiceAccToken) {
             throw new Error('No service account token');
         }
