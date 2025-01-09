@@ -88,6 +88,7 @@ async function _periodicCheckServiceAccToken() {
         const periodicCheck = setInterval(() => {
             const serviceAccToken = localStorage.getItem(SERVICE_ACC_TOKEN);
             if (serviceAccToken && tokenValidFor(serviceAccToken) > TOKEN_REFRESH_THRESHOLD) {
+                hideSignInButton();
                 resolve(serviceAccToken);
             }
         }, 1000);
@@ -145,6 +146,12 @@ function hideSignInButton() {
     const signInButton = document.querySelector('.signIn');
     if (signInButton) {
         signInButton.style.display = 'none';
+    }
+    google.accounts.id.cancel();
+    // remove the sign-in popup manually
+    const signInPopup = document.querySelector('#credential_picker_container');
+    if (signInPopup) {
+        signInPopup.remove();
     }
 }
 
