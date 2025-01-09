@@ -4,7 +4,7 @@
     <title>Main Page</title>
     <link rel="stylesheet" type="text/css" href="https://www.draw.io/styles/grapheditor.css">
 </head>
-<body id="viewer" class="geEditor">
+<body id="viewer" class="geEditor" style="color-scheme: light;">
 
     <h4 id="status"></h4>
     <div class="signIn" data-type="standard"></div>
@@ -108,9 +108,9 @@ async function authUser() {
         google.accounts.id.prompt();
 
         // Timeout to reject the promise if no message is received
-        setTimeout(() => {
-            reject(new Error('Timeout waiting for userToken'));
-        }, 60000); // 60 seconds timeout
+        // setTimeout(() => {
+        //     reject(new Error('Timeout waiting for userToken'));
+        // }, 60000); // 60 seconds timeout
     });
 }
 
